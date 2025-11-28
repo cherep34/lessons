@@ -362,15 +362,16 @@ int main() {
     s.insert(20); // Добавляем 20
     s.insert(5);  // Добавляем 5
 
-    std::cout << "Size: " << s.size() << std::endl;        // 3 - количество элементов
-    std::cout << "Contains 10: " << s.contains(10) << std::endl; // 1 - 10 есть в множестве
-    std::cout << "Empty: " << s.empty() << std::endl;      // 0 - множество не пустое
+    std::cout << s.size() << std::endl;        // 3 - количество элементов
+    std::cout << s.contains(10) << std::endl; // 10 есть в множестве
+    std::cout << s.empty() << std::endl;      //  множество не пустое
 
     s.erase(10); // Удаляем 10
-    std::cout << "After erase(10), contains 10: " << s.contains(10) << std::endl; // 0 - 10 больше нет
+    std::cout << s.contains(10) << std::endl; // 10 больше нет
 
     s.clear(); // Очищаем множество
-    std::cout << "After clear, empty: " << s.empty() << std::endl; // 1 - множество теперь пустое
+    std::cout << s.empty() << std::endl; // множество теперь пустое
 
     return 0;
+
 }
