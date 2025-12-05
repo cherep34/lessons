@@ -396,26 +396,20 @@ int main() {
     s.insert(10);
     s.insert(5);
     s.insert(15);
-    s.insert(3);
+    s.insert(2);
     s.insert(7);
     
-    std::cout << "Set contents: ";
+    std::cout << "Числа в сет:";
     for (auto it = s.begin(); it != s.end(); ++it) {
         std::cout << *it << " ";
     }
     std::cout << std::endl;
 
-    std::cout << "Range-based for loop: ";
-    for (const auto& value : s) {
-        std::cout << value << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "Contains 7: " << s.contains(7) << std::endl;
-    std::cout << "Contains 8: " << s.contains(8) << std::endl;
+    std::cout << "Содержит 7: " << s.contains(7) << std::endl;
+    std::cout << "Содержит 11: " << s.contains(11) << std::endl;
 
     s.erase(5);
-    std::cout << "After erasing 5: ";
+    std::cout << "После удаления: ";
     for (const auto& value : s) {
         std::cout << value << " ";
     }
