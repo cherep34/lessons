@@ -2,6 +2,7 @@
 #include <mutex>       
 #include <thread>      
 #include <cstddef> 
+#include <shared_mutex>
 
 //тип Т
 template <typename T>
@@ -25,7 +26,7 @@ private:
 
     Node* root; //корень
     Node* nil;  //ноль
-    mutable std::mutex mtx;
+    mutable std::shared_mutex mtx;
 
     void left_rotate(Node* x) {
         Node* y = x->right;
@@ -73,7 +74,6 @@ private:
 
     //восстановление после вставки
     void fix_insert(Node* k) {
-        std::lock_guard<std::mutex> lock(mtx);
         while (k != root && k->parent->color == RED) {
             if (k->parent == k->parent->parent->left) {
                 Node* uncle = k->parent->parent->right;
@@ -131,7 +131,6 @@ private:
     }
 
     Node* find_node(const T& value) const {
-        std::lock_guard<std::mutex> lock(mtx);
         Node* current = root;
         while (current != nil) {
             if (value < current->data) {
@@ -145,7 +144,6 @@ private:
         return nil;
     }
 
-    //заменяем u на v, и теперь v на месте u
     void transplant(Node* u, Node* v) {
         if (u->parent == nil) {
             root = v;
@@ -158,7 +156,6 @@ private:
     }
 
     void delete_node(Node* z) {
-        std::lock_guard<std::mutex> lock(mtx);
         Node* y = z;
         Node* x;
         Color y_original_color = y->color;
@@ -255,6 +252,7 @@ public:
     private:
         Node* node;
         Node* nil;
+        std::shared_mutex* mtx;
 
     public:
         using iterator_category = std::bidirectional_iterator_tag;
@@ -263,7 +261,7 @@ public:
         using pointer = const T*;
         using reference = const T&;
 
-        Iterator(Node* n, Node* nil_node) : node(n), nil(nil_node) {}
+        Iterator(Node* n, Node* nil_node, std::shared_mutex* m) : node(n), nil(nil_node), mtx(m) {}
 
         reference operator*() const { 
             return node->data; 
@@ -274,6 +272,7 @@ public:
         }
 
         Iterator& operator++() {
+            std::shared_lock<std::shared_mutex> lock(*mtx);
             if (node->right != nil) {
                 node = node->right;
                 while (node->left != nil) {
@@ -291,6 +290,7 @@ public:
         }
 
         Iterator operator++(int) {
+            std::shared_lock<std::shared_mutex> lock(mtx);
             Iterator tmp = *this;
             ++(*this);
             return tmp;
@@ -318,6 +318,7 @@ public:
     }
 
     void insert(const T& value) {
+        std::unique_lock<std::shared_mutex> lock(mtx);
         Node* y = nil;
         Node* x = root;
         
@@ -353,6 +354,7 @@ public:
     }
 
     void erase(const T& value) {
+        std::unique_lock<std::shared_mutex> lock(mtx);
         Node* z = find_node(value);
         if (z != nil) {
             delete_node(z);
@@ -360,22 +362,26 @@ public:
     }
 
     bool contains(const T& value) const {
+        std::shared_lock<std::shared_mutex> lock(mtx);
         return find_node(value) != nil;
     }
 
     Iterator begin() const {
+        std::shared_lock<std::shared_mutex> lock(mtx);
         Node* current = root;
         while (current != nil && current->left != nil) {
             current = current->left;
         }
-        return Iterator(current, nil);
+        return Iterator(current, nil, &mtx);
     }
 
     Iterator end() const {
-        return Iterator(nil, nil);
+        std::shared_lock<std::shared_mutex> lock(mtx);
+        return Iterator(nil, nil, &mtx);
     }
 
     bool empty() const {
+        std::shared_lock<std::shared_mutex> lock(mtx);
         return root == nil;
     }
 };
